@@ -46,8 +46,10 @@ Here you can easily select for which years and which federal states you want to 
 
 ## Work Packages
 <!-- List of work packages ordered sequentially, each pointing to an issue with more details. -->
+1. Automated Data Pipeline [i1](https://github.com/martinreimer/FAU-SS23-DataEngineering/issues/1)
+2. Automated Tests [i2](https://github.com/martinreimer/FAU-SS23-DataEngineering/issues/2)
+3. Continuous Integration [i3](https://github.com/martinreimer/FAU-SS23-DataEngineering/issues/3)
+4. Deployment [i4](https://github.com/martinreimer/FAU-SS23-DataEngineering/issues/4)
+5. Data Exploration [i5](https://github.com/martinreimer/FAU-SS23-DataEngineering/issues/5)
+6. Data Preprocessing & Visualization [i6](https://github.com/martinreimer/FAU-SS23-DataEngineering/issues/6)
 
-
-
-
-[i1]: https://github.com/jvalue/2023-amse-template/issues/1
