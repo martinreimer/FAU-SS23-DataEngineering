@@ -40,7 +40,7 @@ Meteostat is a climate data source that provides easy access to weather data fro
 * Data Type: JSON
 
 
-Here you can easily select for which years and which federal states you want to call up public holidays. Then YOU can copy the displayed URL at the bottom of the generator and use it for your application.
+Here you can easily select for which years and which federal states in Germany you want to call up public holidays. Then YOU can copy the displayed URL at the bottom of the generator and use it for your application.
 
 
 
