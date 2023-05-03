@@ -3,7 +3,7 @@
 ## Summary
 
 <!-- Describe your data science project in max. 5 sentences. -->
-This data science project aims to explore the trends and patterns of bicycle traffic at specific stations over a given time period. The project will investigate the factors that influence bicycle traffic such as time of day, day of the week, and external factors such as weather conditions and holidays. Additionally, the project will compare the bicycle traffic patterns of different locations in the city where bicycle traffic is monitored to identify any similarities or differences. Overall, the project seeks to provide insights into bicycle traffic patterns and factors that influence them.
+This data science project aims to explore the trends and patterns of bicycle traffic at specific stations in Münster (Germany) over a given time period. The project will investigate the factors that influence bicycle traffic such as time of day, day of the week, and external factors such as weather conditions and holidays. Additionally, the project will compare the bicycle traffic patterns of different locations in the city where bicycle traffic is monitored to identify any similarities or differences. Overall, the project seeks to provide insights into bicycle traffic patterns and factors that influence them.
 
 ## Rationale
 
