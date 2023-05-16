@@ -1,7 +1,6 @@
 import requests
 import config #import config.py with secret tokens
 from datetime import datetime
-import pytz
 import io
 import pandas as pd
 import json
@@ -366,9 +365,9 @@ class Extractor:
 
 
         #get start_date & current_date
-        first_address_id = list(output_sources_dict["source1"].keys())[0]
+        first_address_id = list(output_sources_dict["source1"]["data"].keys())[0]
         # extract date of the first available file in order to get the right data for sources 2 & 3
-        first_month_file = list(output_sources_dict["source1"][first_address_id].keys())[0] #e.g. 2023-05.csv
+        first_month_file = list(output_sources_dict["source1"]["data"][first_address_id].keys())[0] #e.g. 2023-05.csv
         '''
         #for simulating stuff
         #first_month_file = "2019-07.csv"
@@ -395,7 +394,7 @@ class Extractor:
 
         :return: dictionary with a key for each source
         """ 
-        current_year = get_current_date()
+        current_year = get_current_date().year
         output_sources_dict = {}
         output_sources_dict["source1"] = self.__extract_incremental_data_from_source1()
         output_sources_dict["source2"] = self.__extract_incremental_data_from_source2(current_year=current_year)
