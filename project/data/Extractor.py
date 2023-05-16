@@ -112,7 +112,7 @@ class Extractor:
 
     def __extract_initial_data_from_source1(self):
         """
-        extracting data from the data source 1
+        extracting data from the data source 1 for initial ETL
 
         :return: dictionary with keys "metadata" & "data"
         """ 
@@ -167,6 +167,60 @@ class Extractor:
             pbar.update(1)
         pbar.close()
         return output_source1_dict
+    
+
+    def __extract_iterative_data_from_source1(self):
+        """
+        extracting data from the data source 1 for iterative ETL
+
+        :return: dictionary only with data (no metadata)
+        """ 
+        #init output dict
+        output_source1_dict = {}
+
+        # --> to adjust
+
+        #get initial metadata of all counters
+        metadata_path = "/main/site_min.json"
+        source1_metadata = self.__get_source1_file(metadata_path)
+        #transform string to py object -> list of counters
+        source1_metadata_list = json.loads(source1_metadata)
+
+
+        #get address ids in order to get data for all addresses/counters
+        address_ids_list = self.__get_initial_address_ids(source1_metadata_list=source1_metadata_list)
+        print(f"address_ids_list: {address_ids_list}")
+
+
+        #get current file for all addresses
+        #create progressbar
+        max_iter1 = len(address_ids_list)
+        print("Downloading all files for all addresses")
+        pbar = tqdm(total=max_iter1)
+        #go through all address ids
+        for address_id in address_ids_list:
+            #print(f"address_id: {address_id}")
+            #init dict for this address_id
+            output_source1_dict[address_id] = {}
+            path = f"{address_id}"
+
+            #get current months files
+            #get current filename
+            datetime = get_current_date()
+            file_name = self.__get_source1_file_name_from_datetime(time=datetime)
+            path = f"main/{address_id}/{file_name}"
+
+            #get file for this month: csv as string
+            file_string = self.__get_source1_file(path=path)
+
+            #save file in dictionary
+            output_source1_dict[address_id][file_name] = {}
+            output_source1_dict[address_id][file_name]["file"] = file_string
+            
+            time.sleep(0.1)
+            pbar.update(1)
+        pbar.close()
+        return output_source1_dict
     #endregion
 
 
@@ -185,7 +239,9 @@ class Extractor:
 
 
     def initial_extraction(self):
-        self.__extract_initial_data_from_source1()
+        #self.__extract_initial_data_from_source1()
+        self.__extract_iterative_data_from_source1()
+
 
     def incremental_extraction(self):
         pass
