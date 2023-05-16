@@ -5,6 +5,8 @@ import pytz
 import io
 import pandas as pd
 import json
+from tqdm import tqdm, trange
+import time
 
 
 #helper method
@@ -63,11 +65,9 @@ class Extractor:
         """ 
         contents_url = f"https://api.github.com/repos/{self.source1_params['REPO_OWNER']}/{self.source1_params['REPO_NAME']}/contents/{path}"
         contents_url = contents_url.strip()
-        print(f"contents_url: {contents_url}")
         headers = {
             "Authorization": f"Bearer {self.source1_params['API_TOKEN']}"
         }
-        print(f"headers: {headers}")
 
         response = requests.get(contents_url, headers=headers)
         response.raise_for_status()  # Raise an exception if the request was unsuccessful
@@ -94,8 +94,6 @@ class Extractor:
         file_response.raise_for_status()
         #decode bytes to utf-8
         file_content = file_response.content.decode('utf-8')
-        #create dataframe from csv
-        #df = pd.read_csv(io.StringIO(resp), delimiter=',')
         return file_content
     
 
@@ -116,15 +114,19 @@ class Extractor:
         """
         extracting data from the data source 1
 
-        :return: string (csv/json)
+        :return: dictionary with keys "metadata" & "data"
         """ 
+        #init output dict
+        output_source1_dict = {}
+
 
         #get initial metadata of all counters
         metadata_path = "/main/site_min.json"
         source1_metadata = self.__get_source1_file(metadata_path)
         #transform string to py object -> list of counters
         source1_metadata_list = json.loads(source1_metadata)
-        #print(f"source1_metadata_json: {source1_metadata_list}")
+        #save metadata into dict
+        output_source1_dict["metadata"] = source1_metadata_list
 
 
         #get address ids in order to get data for all addresses/counters
@@ -134,12 +136,16 @@ class Extractor:
 
         #get all files for all addresses
         #init data dictionary
-        data_dict = {}
-        
+        output_source1_dict["data"] = {}
+        #create progressbar
+        max_iter1 = len(address_ids_list)
+        print("Downloading all files for all addresses")
+        pbar = tqdm(total=max_iter1)
+        #go through all address ids
         for address_id in address_ids_list:
-            print(f"address_id: {address_id}")
+            #print(f"address_id: {address_id}")
             #init dict for this address_id
-            data_dict[address_id] = {}
+            output_source1_dict["data"][address_id] = {}
             path = f"{address_id}"
             #files per month in repo for this address id
             files_per_month_for_address_id = self.__get_source1_repo_contents(path=path)
@@ -147,7 +153,6 @@ class Extractor:
             for file_per_month in files_per_month_for_address_id:
                 #get name and download_url to this file
                 file_name = file_per_month["name"]
-                print(f"file: {file_name}")
 
                 download_url = file_per_month["download_url"]
 
@@ -155,12 +160,13 @@ class Extractor:
                 file_string = self.__get_source1_file(path=download_url, is_path_url=True)
 
                 #save file in dictionary
-                data_dict[address_id][file_name] = {}
-                data_dict[address_id][file_name]["file"] = file_string
+                output_source1_dict["data"][address_id][file_name] = {}
+                output_source1_dict["data"][address_id][file_name]["file"] = file_string
                 
-            print("-"*60)
-
-        return source1_metadata_list, data_dict
+            time.sleep(0.1)
+            pbar.update(1)
+        pbar.close()
+        return output_source1_dict
     #endregion
 
 
