@@ -1,24 +1,15 @@
 import requests
 import config #import config.py with secret tokens
-import datetime
+from datetime import datetime
 import pytz
 import io
 import pandas as pd
 import json
 from tqdm import tqdm, trange
 import time
-
-
-#helper method
-def get_current_date()-> tuple[int, int, int]:
-    # Get the current time in UTC
-    current_time = datetime.datetime.now(pytz.utc)
-    # Convert the current time to the timezone of Berlin
-    berlin_timezone = pytz.timezone('Europe/Berlin')
-    time = current_time.astimezone(berlin_timezone)
-    #return time
-    return time
-
+import gzip
+import csv
+from helper_methods import get_current_date
 
 
 class Extractor:
@@ -33,20 +24,18 @@ class Extractor:
         self.source2_params = {
             'REPO_OWNER': "od-ms",
             'REPO_NAME': "radverkehr-zaehlstellen",
-            'API_TOKEN': config.github_api_token
+            'STATION_CODE': "R8WPP"
         }
-        #Source3: Holidays Data Soure (API-Feiertage)
+        #Source3: Holidays Data Soure (Feiertage-API)
         self.source3_params = {
             'BUNDESLAND': "nw",
-            'BASE_URL': "https://get.api-feiertage.de",
+            'BASE_PATH': "https://feiertage-api.de/api/",
         }
 
     #region source1: Bicycle Traffic Source (Github)
-
-
-    def __get_source1_file_name_from_datetime(self, time: datetime.datetime) -> str:
+    def __get_source1_file_name_from_datetime(self, time: datetime) -> str:
         """
-        generate csv-filename for input datetime
+        generate csv-filename in necessary format for input datetime
 
         :param time: datetime object
         :return: csv-filename, e.g. "2023-05-csv"
@@ -99,10 +88,10 @@ class Extractor:
 
     def __get_initial_address_ids(self, source1_metadata_list):
         """
-        get specific file (csv/json) from github repo
+        extract address ids from source1 metadata output
 
-        :param path: str
-        :return: string (csv/json)
+        :param source1_metadata_list: list of addresses
+        :return: list 
         """ 
         address_ids = []
         for address in source1_metadata_list:
@@ -169,9 +158,9 @@ class Extractor:
         return output_source1_dict
     
 
-    def __extract_iterative_data_from_source1(self):
+    def __extract_incremental_data_from_source1(self):
         """
-        extracting data from the data source 1 for iterative ETL
+        extracting data from the data source 1 for incremental ETL
 
         :return: dictionary only with data (no metadata)
         """ 
@@ -224,47 +213,191 @@ class Extractor:
     #endregion
 
 
+    #region source2: Meteostat
+    '''
+    def __get_source2_weather_station(self):
+        """
+        get all weather stations
+
+        :param source1_metadata_list: list of addresses
+        """ 
+        url = "https://bulk.meteostat.net/v2/stations/full.json.gz"
+        response = requests.get(url, stream=True)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            filename = "full.json.gz"
+
+            # Save the response content to a file
+            with open(filename, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    f.write(chunk)
+
+        with gzip.open(filename, 'rt') as f:
+            data = json.load(f)
+                
+            # Process the JSON data
+            for station in data:
+                # Access individual station data
+                print(f"{station['id']}, {station['name']}")
+    '''
 
 
-    def __extract_data_from_source2(self):
-        # Code for extracting data from the data source
-        pass
+    def __get_source2_annual_data(self, year):
+        """
+        get annual data dump for weather data 
+        :param year
+        :return: str in csv-format 
+        """ 
+        STATION_CODE = self.source2_params['STATION_CODE']
+        url = f"https://bulk.meteostat.net/v2/hourly/{year}/{STATION_CODE}.csv.gz"
+        response = requests.get(url, stream=True)
+        csv_string = ""
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Read the response content into a BytesIO buffer
+            buffer = io.BytesIO(response.content)
+
+            # Open the gzip file
+            with gzip.open(buffer, 'rt') as f:
+                # Read the CSV data into a string
+                csv_string = f.read()
+        return csv_string
+
+
+    def __extract_initial_data_from_source2(self, start_year, current_year):
+        """
+        extracting data from the data source 2 for initial ETL
+
+        :param start_year
+        :param current_year
+        :return: dictionary with key for each year
+        """ 
+        output_source2_dict = {}
+
+        #loop through all needed years
+        for year in range(start_year, current_year + 1):
+            print(year)
+            output_for_year = self.__get_source2_annual_data(year=year)
+            #save into dictionary
+            output_source2_dict[year] = output_for_year
+            
+            if(start_year == current_year):
+                break
+        
+        return output_source2_dict
+        
 
 
 
+    def __extract_incremental_data_from_source2(self, current_year):
+        """
+        extracting data from the data source 2 for incremental ETL
 
-    def __extract_data_from_source3(self):
-        # Code for extracting data from the data source
-        pass
+        :param current_year
+        :return: dictionary with key for current year
+        """ 
+        output_source2_dict = {}
+        #loop through all needed years
+        output_for_year = self.__get_source2_annual_data(year=current_year)
+        #save into dictionary
+        output_source2_dict[current_year] = output_for_year
+        return output_source2_dict
+
+    #endregion
+
+    #region source3: Feiertage-API
+
+
+    def __extract_initial_data_from_source3(self, start_year: int, current_year: int):
+        """
+        extracting holidays data from  start_time to current time for initial ETL
+
+        :param start_year
+        :param current_year
+        :return: list of dictionaries with all holidays with keys for each year
+        """     
+        output_source3_dict = {}
+
+        for year in range(start_year, current_year + 1):
+            params = {
+                "jahr": year,
+                "nur_land": self.source3_params["BUNDESLAND"]
+            }
+            response = requests.get(self.source3_params["BASE_PATH"], params=params)
+            holidays_in_year = response.json()
+            output_source3_dict[year] = holidays_in_year
+        
+        return output_source3_dict
+
+
+    def __extract_incremental_data_from_source3(self, current_year):
+        """
+        extracting holidays data for current year for incremental ETL
+
+        :param current_year
+        :return: dictionary with all holidays of current year
+        """     
+        output_source3_dict = {}
+
+        params = {
+            "jahr": current_year,
+            "nur_land": self.source3_params["BUNDESLAND"]
+        }
+        response = requests.get(self.source3_params["BASE_PATH"], params=params)
+        holidays_in_year = response.json()
+        output_source3_dict = holidays_in_year
+        
+        return output_source3_dict
+    #endregion
 
 
     def initial_extraction(self):
-        #self.__extract_initial_data_from_source1()
-        self.__extract_iterative_data_from_source1()
+        """
+        get initial extractions for each data source
+
+        :return: dictionary with a key for each source
+        """ 
+        output_sources_dict = {}
+
+
+        #get output source1
+        output_sources_dict["source1"] = self.__extract_initial_data_from_source1()
+
+
+        #get start_date & current_date
+        first_address_id = list(output_sources_dict["source1"].keys())[0]
+        # extract date of the first available file in order to get the right data for sources 2 & 3
+        first_month_file = list(output_sources_dict["source1"][first_address_id].keys())[0] #e.g. 2023-05.csv
+        '''
+        #for simulating stuff
+        #first_month_file = "2019-07.csv"
+        '''
+        date_file_format = "%Y-%m"
+        first_date = datetime.strptime(first_month_file.replace(".csv", ""), date_file_format).date()
+        start_year = first_date.year
+
+
+        #get output source2
+        current_year = get_current_date().year
+        output_sources_dict["source2"] = self.__extract_initial_data_from_source2(start_year=start_year, current_year=current_year)
+
+
+        #get source3
+        output_sources_dict["source3"] = output_source3_dict = self.__extract_initial_data_from_source3(start_year=start_year, current_year=current_year)
+
+        return output_sources_dict
 
 
     def incremental_extraction(self):
-        pass
+        """
+        get incremental extractions for each data source
 
-
-
-
-
-
-
-
-path = "/main/site_min.json"
-'''
-
-counters = ["100031297","100031300", "100034978", "100034980", "100034981", "100034982", "100034983", "100035541", "100053305"]
-path = counters[0]
-time = get_current_date()
-file_name = get_github_file_name_from_time(time=time)
-path = f"main/100031297/{file_name}"
-#contents = get_github_repo_contents(owner=OWNER, repo=REPO, path=path, token=GITHUB_TOKEN)
-
-
-df = get_github_csv_file(owner=OWNER, repo=REPO, path=path, token=GITHUB_TOKEN)
-df.head(2)
-
-'''
+        :return: dictionary with a key for each source
+        """ 
+        current_year = get_current_date()
+        output_sources_dict = {}
+        output_sources_dict["source1"] = self.__extract_incremental_data_from_source1()
+        output_sources_dict["source2"] = self.__extract_incremental_data_from_source2(current_year=current_year)
+        output_sources_dict["source3"] = self.__extract_incremental_data_from_source3(current_year=current_year)
+        return output_sources_dict
