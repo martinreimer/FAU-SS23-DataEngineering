@@ -33,14 +33,14 @@ Data is updated nightly and is available at 15 minute intervals. The most recent
 Meteostat is a climate data source that provides easy access to weather data from national meteorological offices. It simplifies the process of developing weather and climate data-driven applications by offering a centralized, up-to-date database with import routines and quality assurance measures.
 
 
-### Datasource 3: API-Feiertage
-* [Documentation](https://www.api-feiertage.de/)
-* [Data URL](https://get.api-feiertage.de/?years=2023&states=nw)
+### Datasource 3: Feiertage-API
+* [Documentation](https://www.feiertage-api.de/) 
+* [Beispiel Abfrage](https://feiertage-api.de/api/?jahr=2019&nur_land=nw)
 * License: no license / free of charge
 * Data Type: JSON
 
 
-Here you can easily select for which years and which federal states in Germany you want to call up public holidays. Then YOU can copy the displayed URL at the bottom of the generator and use it for your application.
+Here you can easily select for which years and which federal states in Germany you want to call up public holidays. 
 
 
 
