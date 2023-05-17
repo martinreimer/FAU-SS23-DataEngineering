@@ -9,7 +9,7 @@ loader = L.Loader()
 
 
 def initial_etl():
-    skip_extraction = True
+    skip_extraction = False
     if not skip_extraction:
         extracted_data = extractor.initial_extraction()
         print(extracted_data.keys())
@@ -24,7 +24,7 @@ def initial_etl():
         with open('saved_extracted_data.pkl', 'rb') as f:
             extracted_data = pickle.load(f)
     transformed_data = transformer.transform_initial_data(extracted_data)
-    #loader.load_data(transformed_data)
+    loader.load_initial_data(transformed_data)
 
 
 def incremental_etl():

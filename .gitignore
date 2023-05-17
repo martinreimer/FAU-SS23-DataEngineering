@@ -2,3 +2,5 @@ project/data/config.py
 project/data/__pycache__
 *.csv
 *.pkl
+*.db
+.~lock.source_m_df.csv#
