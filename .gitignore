@@ -1,2 +1,4 @@
 project/data/config.py
 project/data/__pycache__
+*.csv
+*.pkl

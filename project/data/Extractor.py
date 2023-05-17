@@ -357,9 +357,12 @@ class Extractor:
 
         :return: dictionary with a key for each source
         """ 
+        print("starting initial extraction ...")
         output_sources_dict = {}
 
 
+        print("-"*60)
+        print("extracting source 1 ...")
         #get output source1
         output_sources_dict["source1"] = self.__extract_initial_data_from_source1()
 
@@ -377,11 +380,15 @@ class Extractor:
         start_year = first_date.year
 
 
+        print("-"*60)
+        print("extracting source 2 ...")
         #get output source2
         current_year = get_current_date().year
         output_sources_dict["source2"] = self.__extract_initial_data_from_source2(start_year=start_year, current_year=current_year)
 
 
+        print("-"*60)
+        print("extracting source 3 ...")
         #get source3
         output_sources_dict["source3"] = output_source3_dict = self.__extract_initial_data_from_source3(start_year=start_year, current_year=current_year)
 
@@ -394,9 +401,17 @@ class Extractor:
 
         :return: dictionary with a key for each source
         """ 
+        print("starting initial extraction ...")
+
         current_year = get_current_date().year
         output_sources_dict = {}
+        print("-"*60)
+        print("extracting source 1 ...")
         output_sources_dict["source1"] = self.__extract_incremental_data_from_source1()
+        print("-"*60)
+        print("extracting source 2 ...")
         output_sources_dict["source2"] = self.__extract_incremental_data_from_source2(current_year=current_year)
+        print("-"*60)
+        print("extracting source 3 ...")
         output_sources_dict["source3"] = self.__extract_incremental_data_from_source3(current_year=current_year)
         return output_sources_dict
