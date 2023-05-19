@@ -107,15 +107,13 @@ class Extractor:
         #init output dict
         output_source1_dict = {}
 
-
         #get initial metadata of all counters
         metadata_path = "/main/site_min.json"
         source1_metadata = self.__get_source1_file(metadata_path)
         #transform string to py object -> list of counters
         source1_metadata_list = json.loads(source1_metadata)
-        #save metadata into dict
-        output_source1_dict["metadata"] = source1_metadata_list
-
+        #Optionally: save metadata into dict
+        #output_source1_dict["metadata"] = source1_metadata_list
 
         #get address ids in order to get data for all addresses/counters
         address_ids_list = self.__get_initial_address_ids(source1_metadata_list=source1_metadata_list)
@@ -124,7 +122,6 @@ class Extractor:
 
         #get all files for all addresses
         #init data dictionary
-        output_source1_dict["data"] = {}
         #create progressbar
         max_iter1 = len(address_ids_list)
         print("Downloading all files for all addresses")
@@ -133,7 +130,7 @@ class Extractor:
         for address_id in address_ids_list:
             #print(f"address_id: {address_id}")
             #init dict for this address_id
-            output_source1_dict["data"][address_id] = {}
+            output_source1_dict[address_id] = {}
             path = f"{address_id}"
             #files per month in repo for this address id
             files_per_month_for_address_id = self.__get_source1_repo_contents(path=path)
@@ -148,8 +145,8 @@ class Extractor:
                 file_string = self.__get_source1_file(path=download_url, is_path_url=True)
 
                 #save file in dictionary
-                output_source1_dict["data"][address_id][file_name] = {}
-                output_source1_dict["data"][address_id][file_name]["file"] = file_string
+                output_source1_dict[address_id][file_name] = {}
+                output_source1_dict[address_id][file_name]["file"] = file_string
                 
             time.sleep(0.1)
             pbar.update(1)
@@ -345,7 +342,7 @@ class Extractor:
         }
         response = requests.get(self.source3_params["BASE_PATH"], params=params)
         holidays_in_year = response.json()
-        output_source3_dict = holidays_in_year
+        output_source3_dict["current_year"] = holidays_in_year
         
         return output_source3_dict
     #endregion
@@ -357,20 +354,19 @@ class Extractor:
 
         :return: dictionary with a key for each source
         """ 
+        print("-"*60)
         print("starting initial extraction ...")
         output_sources_dict = {}
 
-
-        print("-"*60)
         print("extracting source 1 ...")
         #get output source1
         output_sources_dict["source1"] = self.__extract_initial_data_from_source1()
 
 
         #get start_date & current_date
-        first_address_id = list(output_sources_dict["source1"]["data"].keys())[0]
+        first_address_id = list(output_sources_dict["source1"].keys())[0]
         # extract date of the first available file in order to get the right data for sources 2 & 3
-        first_month_file = list(output_sources_dict["source1"]["data"][first_address_id].keys())[0] #e.g. 2023-05.csv
+        first_month_file = list(output_sources_dict["source1"][first_address_id].keys())[0] #e.g. 2023-05.csv
         '''
         #for simulating stuff
         #first_month_file = "2019-07.csv"
@@ -379,15 +375,11 @@ class Extractor:
         first_date = datetime.strptime(first_month_file.replace(".csv", ""), date_file_format).date()
         start_year = first_date.year
 
-
-        print("-"*60)
         print("extracting source 2 ...")
         #get output source2
         current_year = get_current_date().year
         output_sources_dict["source2"] = self.__extract_initial_data_from_source2(start_year=start_year, current_year=current_year)
 
-
-        print("-"*60)
         print("extracting source 3 ...")
         #get source3
         output_sources_dict["source3"] = output_source3_dict = self.__extract_initial_data_from_source3(start_year=start_year, current_year=current_year)
