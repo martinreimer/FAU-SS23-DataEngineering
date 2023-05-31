@@ -16,7 +16,8 @@ class Loader:
     def load_incremental_data(self, transformed_data):
         # Code for loading the transformed data to the destination
         # Connect to the SQLite database
-        conn = sqlite3.connect('bicycle_counter_factors_dataset.db')
+        conn = sqlite3.connect('../../bicycle_counter_factors_dataset.db')
+        
 
         # Query the database to retrieve the newest datetime value
         query = "SELECT MAX(Datetime) FROM dataset"
@@ -28,7 +29,7 @@ class Loader:
         new_rows_df = transformed_data[transformed_data.index > newest_datetime]
 
         # Export the new dataframe to the existing SQLite table
-        if new_rows_df.empty:
+        if not new_rows_df.empty:
             new_rows_df.to_sql('dataset', conn, if_exists='append')
 
         # Close the database connection
