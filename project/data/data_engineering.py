@@ -1,5 +1,6 @@
 import Extractor as E, Transformer as T, Loader as L
 import pickle
+import sys
 
 # Initialize ETL
 extractor = E.Extractor()
@@ -40,6 +41,15 @@ def incremental_etl():
     print("-"*60)
 
 
-
-initial_etl()
-incremental_etl()
+#make py file runnable in ssh
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python data_engineering.py [initial_etl|incremental_etl]")
+    else:
+        command = sys.argv[1]
+        if command == "initial_etl":
+            initial_etl()
+        elif command == "incremental_etl":
+            incremental_etl()
+        else:
+            print("Invalid command. Available options: initial_etl, incremental_etl")
