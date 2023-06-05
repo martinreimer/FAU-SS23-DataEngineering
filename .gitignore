@@ -4,3 +4,4 @@ project/data/__pycache__
 *.pkl
 *.db
 .~lock.source_m_df.csv#
+exercises/trainstops.sqlite
