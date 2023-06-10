@@ -1,6 +1,10 @@
 name: Continuous Integration
 run-name: ${{ github.actor }} is running CI-Pipeline 🚀
-on: [push]
+on:
+  push:
+    branches:
+      - main  # Adjust this to match your branch name
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
