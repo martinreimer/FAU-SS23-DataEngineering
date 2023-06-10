@@ -1,0 +1,17 @@
+name: Continuous Integration
+run-name: ${{ github.actor }} is running CI-Pipeline 🚀
+on:
+  push:
+    branches:
+      - main  # Adjust this to match your branch name
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run tests
+        run: ./project/test.sh
