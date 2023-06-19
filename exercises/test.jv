@@ -1,0 +1,87 @@
+pipeline CarsPipeline {
+    CarsHttpExtractor
+    -> CarsTextFileInterpreter
+    -> MetadataLinesDeleter
+    -> CarsCSVInterpreter
+    -> ColumnWriter
+    -> ColumnDeleter
+    -> CarsTableInterpreter
+    -> SQLiteLoader;
+
+    
+    block CarsHttpExtractor oftype HttpExtractor {
+        url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46251-0021_00.csv";
+    }
+
+    block CarsTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "utf-8";
+    }
+
+    block CarsCSVInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+    block MetadataLinesDeleter oftype TextLineDeleter {
+        lines: [1, 2, 3, 4, 5, 6, 484, 485, 486, 487];
+    }
+
+
+    block ColumnDeleter oftype ColumnDeleter { 
+        delete: [column A]; 
+    }
+
+    block ColumnWriter oftype CellWriter {
+        at: cell A8;
+        write: ["Name"];
+    }
+
+    
+
+
+
+
+
+
+
+    valuetype CIN oftype text {
+        constraints: [ CIN_Validation ];
+    }
+
+    // Define validation rules for columns
+    constraint CIN_Validation oftype RegexConstraint {
+        regex: /^[0-9]{5}$/;
+    }
+
+    constraint PositiveInteger_Validation oftype RangeConstraint {
+        lowerBound: 1;
+        lowerBoundInclusive: true;
+    }
+
+    valuetype PositiveInteger oftype decimal {
+        constraints: [ PositiveInteger_Validation ];
+    }
+
+
+    block CarsTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "date" oftype text,
+            "CIN" oftype CIN,
+            "name" oftype text,
+            "petrol" oftype PositiveInteger,
+            "diesel" oftype PositiveInteger,
+            "gas" oftype PositiveInteger,
+            "electro" oftype PositiveInteger,
+            "hybrid" oftype PositiveInteger,
+            "plugInHybrid" oftype PositiveInteger,
+            "others" oftype PositiveInteger
+        ];
+    }
+
+    
+    block SQLiteLoader oftype SQLiteLoader {
+        table: "cars";
+        file: "cars.sqlite";
+    }
+
+}
