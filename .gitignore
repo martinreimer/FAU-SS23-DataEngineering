@@ -5,3 +5,4 @@ project/data/__pycache__
 *.db
 .~lock.source_m_df.csv#
 exercises/trainstops.sqlite
+exercises/cars.sqlite

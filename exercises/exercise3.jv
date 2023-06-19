@@ -1,0 +1,92 @@
+pipeline CarsPipeline {
+    CarsHttpExtractor
+    -> CarsTextFileInterpreter
+    // Delete Metadata
+    -> MetadataLinesDeleter
+    // Transform TextFile to Sheet
+    -> CarsCSVInterpreter
+    // Write Column Names
+    -> AColumnWriter -> BColumnWriter -> CColumnWriter -> MColumnWriter -> WColumnWriter -> AGColumnWriter -> AQColumnWriter -> BAColumnWriter -> BKColumnWriter -> BUColumnWriter
+    // Transform Sheet to Table
+    -> CarsTableInterpreter
+    // Write to SQLite database
+    -> SQLiteLoader;
+
+
+    // Download CSV file
+    block CarsHttpExtractor oftype HttpExtractor {
+        url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46251-0021_00.csv";
+    }
+
+    // Encode such that german umlauts are correctly interpreted
+    block CarsTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "ISO-8859-1";
+    }
+
+    block CarsCSVInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+    // Delete Metadata specific lines
+    block MetadataLinesDeleter oftype TextLineDeleter {
+        lines: [1, 2, 3, 4, 5, 6, 484, 485, 486, 487];
+    }
+
+    // Write Column Names
+    block AColumnWriter oftype CellWriter { at: cell A1; write: ["date"];}
+    block BColumnWriter oftype CellWriter { at: cell B1; write: ["CIN"];}
+    block CColumnWriter oftype CellWriter { at: cell C1; write: ["name"];}
+    block MColumnWriter oftype CellWriter { at: cell M1; write: ["petrol"];}
+    block WColumnWriter oftype CellWriter { at: cell W1; write: ["diesel"];}
+    block AGColumnWriter oftype CellWriter { at: cell AG1; write: ["gas"];}
+    block AQColumnWriter oftype CellWriter { at: cell AQ1; write: ["electro"];}
+    block BAColumnWriter oftype CellWriter { at: cell BA1; write: ["hybrid"];}
+    block BKColumnWriter oftype CellWriter { at: cell BK1; write: ["plugInHybrid"];}
+    block BUColumnWriter oftype CellWriter { at: cell BU1; write: ["others"];}
+    
+
+    // Define validation rules for CIN column
+    valuetype CIN oftype text {
+        constraints: [ CIN_Validation ];
+    }
+
+    // Regex accepts optional leading zero and matches 4 digits after the optional zero.
+    constraint CIN_Validation oftype RegexConstraint {
+        regex: /^0?[0-9]{4}$/;
+    }
+
+    // Define validation rules for PositiveInteger columns
+    valuetype PositiveInteger oftype decimal {
+        constraints: [ PositiveInteger_Validation ];
+    }
+    
+    // RangeConstraint accepts only positive integers
+    constraint PositiveInteger_Validation oftype RangeConstraint {
+        lowerBound: 1;
+        lowerBoundInclusive: true;
+    }
+
+    // Define table structure
+    // all unnecessary columns are deleted
+    block CarsTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "date" oftype text,
+            "CIN" oftype CIN,
+            "name" oftype text,
+            "petrol" oftype PositiveInteger,
+            "diesel" oftype PositiveInteger,
+            "gas" oftype PositiveInteger,
+            "electro" oftype PositiveInteger,
+            "hybrid" oftype PositiveInteger,
+            "plugInHybrid" oftype PositiveInteger,
+            "others" oftype PositiveInteger
+        ];
+    }
+
+    // Write to SQLite database
+    block SQLiteLoader oftype SQLiteLoader {
+        table: "cars";
+        file: "cars.sqlite";
+    }
+}
