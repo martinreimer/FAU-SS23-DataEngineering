@@ -1,39 +1,23 @@
-# AMSE/SAKI 2023 Template Project
-This template project provides some structure for your open data project in the AMSE/SAKI module.
-This repository contains (a) a data science project that is developed by the student over the course of the semester, and (b) the exercises that are submitted over the course of the semester.
-Before you begin, make sure you have [Python](https://www.python.org/) and [Jayvee](https://github.com/jvalue/jayvee) installed. We will work with [Jupyter notebooks](https://jupyter.org/). The easiest way to do so is to set up [VSCode](https://code.visualstudio.com/) with the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
+# AMSE/SAKI 2023: A Course on **Data Engineering**
 
-## Project Setup
-The following files are part of this template repository as examples and should be **replaced by you** over the semester:
+This repository is part of the university course "Advanced Software Methods / Software Applications with AI" at the FAU Erlangen-Nürnberg. It contains all the necessary files and submissions pertaining to the exercises as well as the final project for this course.
 
-- `data.sqlite`: Your final, cleaned dataset. You will create an automated data pipeline that creates this SQLite database from multiple open data sources. The template repository includes data about train stations in germany, you need to replace this with your data!
-- `exploration.ipynb`: A Jupyter notebook that you can use to explore your data and show in detail what it looks like. You can refer to this file in your report for users that want more information about your data.
-- `report.ipynb`: Your final report as a Jupyter notebook. This is the result of your project work and should lead with a question that you want to answer using open data. The content of the report should answer the question, ideally using fitting visualizations, based on the data in `data.sqlite`.
+## Repository Structure
 
+The repository is structured as follows:
+
+- `.github`: Contains workflow configuration files for CI/CD and feedback on the exercises.
+- `exercises`: Contains all exercise submissions for the course. Each exercise involves the creation of a data engineering pipeline for a different dataset. Exercise files are named as "exercise<number>.jv" or "exercise<number>.py", depending on the programming language used.
+- `project`: Contains all the files related to the project. This includes the project plan, report, slides, Python notebooks for data exploration and analysis, and scripts for data engineering.
 
 ## Exercises
-During the semester you will need to complete exercises, sometimes using [Python](https://www.python.org/), sometimes using [Jayvee](https://github.com/jvalue/jayvee). You **must** place your submission in the `exercises` folder in your repository and name them according to their number from one to five: `exercise<number from 1-5>.<jv or py>`.
 
-In regular intervalls, exercises will be given as homework to complete during the semester. We will divide you into two groups, one completing an exercise in Jayvee, the other in Python, switching each exercise. Details and deadlines will be discussed in the lecture, also see the [course schedule](https://amse.uni1.de/). At the end of the semester, you will therefore have the following files in your repository:
+All submissions for exercises are located in the `exercises` folder. These exercises involve building data engineering pipelines for different datasets using [Python](https://www.python.org/) and [Jayvee](https://github.com/jvalue/jayvee), a programming language developed at this university specifically for data engineering. Each submission is a file named as "exercise<number>.jv" or "exercise<number>.py" depending on the language used for the exercise.
 
-1. `./exercises/exercise1.jv` or `./exercises/exercise1.py`
-2. `./exercises/exercise2.jv` or `./exercises/exercise2.py`
-3. `./exercises/exercise3.jv` or `./exercises/exercise3.py`
-4. `./exercises/exercise4.jv` or `./exercises/exercise4.py`
-5. `./exercises/exercise5.jv` or `./exercises/exercise5.py`
+## Project Work
 
-### Exercise Feedback
-We provide automated exercise feedback using a GitHub action (that is defined in `.github/workflows/exercise-feedback.yml`). To view your exercise feedback, navigate to Actions -> Exercise Feedback in your repository (or use the direct link [/actions/workflows/exercise-feedback.yml](/actions/workflows/exercise-feedback.yml)).
+The `project` directory contains all files pertaining to the final project. This project is a self-organized data science project developed over the course of the semester. The project is based on at least two different open data sources, one of which must be from Mobilithek.
 
-The exercise feedback is executed whenever you make a change in files in the `exercise` folder and push your local changes to the repository on GitHub. To see the feedback, open the latest GitHub Action run, open the `exercise-feedback` job and `Exercise Feedback` step. You should see command line output that contains output like this:
+In this project, I analyzed bicycle traffic in the city of Münster, Germany, using various open data sources. I leveraged Python for data exploration and analysis and developed a data engineering pipeline to process and transform the data. The result of the project includes Python notebooks for data exploration and analysis (`data_analysis.ipynb`), and scripts for data engineering in the `data` directory.
 
-```sh
-Found exercises/exercise1.jv, executing model...
-Found output file airports.sqlite, grading...
-Grading Exercise 1
-	Overall points 17 of 17
-	---
-	By category:
-		Shape: 4 of 4
-		Types: 13 of 13
-```
+The final report of the project, which provides a comprehensive insight into the methodologies, data sources, challenges faced, and results obtained, can be found in `project/report.pdf`. The project presentation slides are available in `project/slides.pdf`.
