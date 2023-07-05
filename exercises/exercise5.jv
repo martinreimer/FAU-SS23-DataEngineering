@@ -1,0 +1,75 @@
+// This pipeline downloads the GTFS data from the RhönEnergie Bus website
+// and writes the data to a SQLite database.
+// Data Source: https://mobilithek.info/offers/110000000002933000
+
+pipeline FahrplandatenPipeline {
+    HttpExtractor
+    -> ZipArchiveInterpreter
+    -> StopsFilePicker
+    -> StopsTextFileInterpreter
+    -> StopsCSVInterpreter
+    -> StopsTableInterpreter
+    -> SQLiteLoader;
+
+    // Download Zip file
+    block HttpExtractor oftype HttpExtractor {
+        url: "https://gtfs.rhoenenergie-bus.de/GTFS.zip";
+    }
+
+    // Extract Zip file
+    block ZipArchiveInterpreter oftype ArchiveInterpreter {
+        archiveType: "zip";
+    }
+
+    // Select file from archive
+    block StopsFilePicker oftype FilePicker {
+        path: "/stops.txt";
+    }
+
+    // Read Text file
+    block StopsTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "utf8";
+    }
+
+    // Read as CSV file
+    block StopsCSVInterpreter oftype CSVInterpreter {  
+        delimiter: ",";
+        enclosing: '"';
+    }
+
+    // Define constraints
+    // all invalid values are deleted
+    // Coordinates must be between -90 and 90
+    constraint CoordinatesScale oftype RangeConstraint {
+        lowerBound: -90;
+        upperBound: 90;      
+    }
+    valuetype CoordinatesType oftype decimal {
+        constraints: [ CoordinatesScale ];
+    }
+    // Stopname must contain umlauts
+    constraint TextContainsUmlaute oftype RegexConstraint {
+        regex: /[äöüÄÖÜß]/;
+    }
+    valuetype StopnameType oftype text {
+        constraints: [ TextContainsUmlaute ];
+    }
+
+    // Define table structure
+    // all unnecessary columns are deleted
+    block StopsTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "stop_id" oftype text,
+            "stop_name" oftype StopnameType,
+            "stop_lat" oftype CoordinatesType,
+            "stop_lon" oftype CoordinatesType,
+        ];
+    }
+
+    // Write to SQLite database
+    block SQLiteLoader oftype SQLiteLoader {
+        table: "stops";
+        file: "gtfs.sqlite";
+    }
+}
