@@ -47,13 +47,7 @@ pipeline FahrplandatenPipeline {
     valuetype CoordinatesType oftype decimal {
         constraints: [ CoordinatesScale ];
     }
-    // Stopname must contain umlauts
-    constraint TextContainsUmlaute oftype RegexConstraint {
-        regex: /[äöüÄÖÜß]/;
-    }
-    valuetype StopnameType oftype text {
-        constraints: [ TextContainsUmlaute ];
-    }
+    
     // Only keep zones with id:2001
     constraint ZoneFiler oftype AllowlistConstraint {
         allowlist: ["2001"];
@@ -68,7 +62,7 @@ pipeline FahrplandatenPipeline {
         header: true;
         columns: [
             "stop_id" oftype text,
-            "stop_name" oftype StopnameType,
+            "stop_name" oftype text,
             "stop_lat" oftype CoordinatesType,
             "stop_lon" oftype CoordinatesType,
             "zone_id" oftype ZoneFilterType,
