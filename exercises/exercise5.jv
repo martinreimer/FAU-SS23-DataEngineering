@@ -42,17 +42,22 @@ pipeline FahrplandatenPipeline {
     // Coordinates must be between -90 and 90
     constraint CoordinatesScale oftype RangeConstraint {
         lowerBound: -90;
-        upperBound: 90;      
+        upperBound: 90;
+        lowerBoundInclusive: true;
+        upperBoundInclusive: true;      
     }
     valuetype CoordinatesType oftype decimal {
         constraints: [ CoordinatesScale ];
     }
     
     // Only keep zones with id:2001
-    constraint ZoneFiler oftype AllowlistConstraint {
-        allowlist: ["2001"];
+    constraint ZoneFiler oftype RangeConstraint {
+        lowerBound: 2001;
+        upperBound: 2001;
+        lowerBoundInclusive: true;
+        upperBoundInclusive: true;
     }
-    valuetype ZoneFilterType oftype text {
+    valuetype ZoneFilterType oftype integer {
         constraints: [ ZoneFiler ];
     }
 
