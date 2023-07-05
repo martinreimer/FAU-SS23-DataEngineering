@@ -54,6 +54,13 @@ pipeline FahrplandatenPipeline {
     valuetype StopnameType oftype text {
         constraints: [ TextContainsUmlaute ];
     }
+    // Only keep zones with id:2001
+    constraint ZoneFiler oftype AllowlistConstraint {
+        allowlist: ["2001"];
+    }
+    valuetype ZoneFilterType oftype text {
+        constraints: [ ZoneFiler ];
+    }
 
     // Define table structure
     // all unnecessary columns are deleted
@@ -64,6 +71,7 @@ pipeline FahrplandatenPipeline {
             "stop_name" oftype StopnameType,
             "stop_lat" oftype CoordinatesType,
             "stop_lon" oftype CoordinatesType,
+            "zone_id" oftype ZoneFilterType,
         ];
     }
 
